@@ -1,0 +1,70 @@
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  padding: 50px 40px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.7s ease;
+}
+
+.dashboard-card h1 {
+  margin-bottom: 10px;
+}
+
+.dashboard-card p {
+  color: #6b7280;
+  margin-bottom: 30px;
+}
+
+.dashboard-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.dashboard-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.login-btn {
+  background: #4f46e5;
+  color: white;
+}
+
+.login-btn:hover {
+  background: #4338ca;
+  transform: translateY(-3px);
+}
+
+.register-btn {
+  background: #e5e7eb;
+}
+
+.register-btn:hover {
+  background: #d1d5db;
+  transform: translateY(-3px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+  }
+}
