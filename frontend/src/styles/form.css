@@ -1,20 +1,28 @@
+/* form.css — shared form primitives */
 .form-group {
-  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0; /* spacing handled by parent gap */
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  transition: 0.3s;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #dde2ec;
+  font-size: 0.95rem;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #f4f1ed;
+  color: #0f1f3d;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border-color: #4f46e5;
+  border-color: #1A3263;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+  box-shadow: 0 0 0 3px rgba(26, 50, 99, 0.1);
+  background: #ffffff;
 }
