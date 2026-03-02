@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import "../styles/Browse.css";
 
@@ -352,6 +352,7 @@ function ListingCard({ item, onBook, onCancelBook, onContact, bookingState }) {
 
 /* ─── Browse page ────────────────────────────────────────────────── */
 export default function Browse() {
+  const navigate = useNavigate();
   const [listings,     setListings]     = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState("");
@@ -391,6 +392,17 @@ export default function Browse() {
     showToast("Reservation cancelled.", "info");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+    showToast("Logged out successfully", "info");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
+  };
+
   const filtered = listings
     .filter((l) => {
       const matchCat = category === "All" || l.category === category;
@@ -421,18 +433,30 @@ export default function Browse() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Header with user actions */}
       <div className="browse__header">
         <div className="browse__header-text">
           <h1 className="browse__title">Campus Marketplace</h1>
           <p className="browse__subtitle">{filtered.length} listing{filtered.length !== 1 ? "s" : ""} available</p>
         </div>
-        <Link to="/create" className="browse__create-btn">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="17" height="17">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-          </svg>
-          Add Listing
-        </Link>
+        <div className="browse__header-actions">
+          <button onClick={handleProfile} className="browse__icon-btn" title="Profile">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button onClick={handleLogout} className="browse__icon-btn" title="Logout">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-4 4a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <Link to="/create" className="browse__create-btn">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="17" height="17">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+            </svg>
+            Add Listing
+          </Link>
+        </div>
       </div>
 
       {/* Search + sort */}

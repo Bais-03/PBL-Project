@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Browse from "./pages/Browse";
 import CreateListing from "./pages/CreateListing";
 import BookedItems from "./components/BookedItems";
+import Profile from "./pages/Profile"; // Add Profile import
 
 function App() {
   return (
@@ -46,6 +47,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookedItems />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Add Profile route */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

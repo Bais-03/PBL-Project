@@ -235,11 +235,13 @@ body {
 .navbar__link-btn {
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(232,226,219,0.85);
+  color: rgba(251, 250, 248, 0.85);
   text-decoration: none;
   padding: 0.4rem 0.875rem;
   border-radius: 8px;
   transition: var(--transition);
+
+  border: 1.5px solid #ffbc5d;
 }
 .navbar__link-btn:hover { color: var(--white); }
 .navbar--scrolled .navbar__link-btn { color: var(--slate); }
@@ -1074,3 +1076,4 @@ body {
   .contact-form { padding: 1.75rem 1.25rem; }
   .footer__legal { flex-direction: column; gap: 0.5rem; text-align: right; }
 }
+
