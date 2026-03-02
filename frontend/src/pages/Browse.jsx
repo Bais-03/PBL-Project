@@ -361,7 +361,9 @@ export default function Browse() {
   const [bookingState, setBookingState] = useState(null);
   const [contactItem,  setContactItem]  = useState(null);
   const [toast,        setToast]        = useState(null);
+  const [sidebarOpen,  setSidebarOpen]  = useState(false);
   const toastRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -374,6 +376,17 @@ export default function Browse() {
       finally { setLoading(false); }
     };
     fetch();
+  }, []);
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const showToast = (msg, type = "success") => {
@@ -397,10 +410,12 @@ export default function Browse() {
     localStorage.removeItem("user");
     navigate("/login");
     showToast("Logged out successfully", "info");
+    setSidebarOpen(false);
   };
 
   const handleProfile = () => {
     navigate("/profile");
+    setSidebarOpen(false);
   };
 
   const filtered = listings
@@ -433,23 +448,26 @@ export default function Browse() {
         </div>
       )}
 
-      {/* Header with user actions */}
+      {/* Header with hamburger menu */}
       <div className="browse__header">
-        <div className="browse__header-text">
-          <h1 className="browse__title">Campus Marketplace</h1>
-          <p className="browse__subtitle">{filtered.length} listing{filtered.length !== 1 ? "s" : ""} available</p>
+        <div className="browse__header-left">
+          <button 
+            className="browse__hamburger" 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Menu"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div className="browse__header-text">
+            <h1 className="browse__title">Campus Marketplace</h1>
+            <p className="browse__subtitle">{filtered.length} listing{filtered.length !== 1 ? "s" : ""} available</p>
+          </div>
         </div>
         <div className="browse__header-actions">
-          <button onClick={handleProfile} className="browse__icon-btn" title="Profile">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <button onClick={handleLogout} className="browse__icon-btn" title="Logout">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-4 4a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-            </svg>
-          </button>
           <Link to="/create" className="browse__create-btn">
             <svg viewBox="0 0 20 20" fill="currentColor" width="17" height="17">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
@@ -458,6 +476,35 @@ export default function Browse() {
           </Link>
         </div>
       </div>
+
+      {/* Sidebar */}
+      <div className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`} ref={sidebarRef}>
+        <div className="sidebar__header">
+          <h3 className="sidebar__title">Menu</h3>
+          <button className="sidebar__close" onClick={() => setSidebarOpen(false)}>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+        <div className="sidebar__content">
+          <button onClick={handleProfile} className="sidebar__item">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+            <span>Profile</span>
+          </button>
+          <button onClick={handleLogout} className="sidebar__item sidebar__item--logout">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Overlay when sidebar is open */}
+      {sidebarOpen && <div className="sidebar__overlay" onClick={() => setSidebarOpen(false)} />}
 
       {/* Search + sort */}
       <div className="browse__controls">

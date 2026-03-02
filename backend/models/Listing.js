@@ -56,6 +56,12 @@ const listingSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    // ADD THIS NEW FIELD
+    status: {
+      type: String,
+      enum: ["available", "booked", "sold"],
+      default: "available",
+    },
   },
   { timestamps: true }
 );

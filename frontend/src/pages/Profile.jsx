@@ -19,34 +19,65 @@ export default function Profile() {
   });
   const [toast, setToast] = useState(null);
 
-  // Wrap fetch functions in useCallback
+  // Fetch user profile - FIXED: Using auth to get user data
   const fetchUserProfile = useCallback(async () => {
     try {
-      const res = await axios.get("/users/profile", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setUser(res.data);
-      setFormData({
-        name: res.data.name || "",
-        email: res.data.email || "",
-        phone: res.data.phone || "",
-        college: res.data.college || "",
-        semester: res.data.semester || "",
-      });
-    } catch (err) {
-      console.error("Failed to fetch profile", err);
-      if (err.response?.status === 401) {
+      // Get token from localStorage
+      const token = localStorage.getItem("token");
+      
+      // Since you don't have /users/profile, we need to get user data from auth
+      // Option 1: Decode token to get user info (if your token contains user data)
+      // Option 2: Get user from listings or separate endpoint
+      
+      // For now, let's create a user object from token if possible
+      // This is a workaround - ideally you'd have a /users/me endpoint
+      const tokenData = token ? JSON.parse(atob(token.split('.')[1])) : null;
+      
+      if (tokenData && tokenData.id) {
+        // We only have id and email from token
+        setUser({
+          id: tokenData.id,
+          email: tokenData.email,
+          name: tokenData.name || "User",
+          phone: "",
+          college: "",
+          semester: ""
+        });
+        
+        setFormData({
+          name: tokenData.name || "User",
+          email: tokenData.email || "",
+          phone: "",
+          college: "",
+          semester: "",
+        });
+      } else {
+        // If no token, redirect to login
         navigate("/login");
       }
+    } catch (err) {
+      console.error("Failed to fetch profile", err);
+      navigate("/login");
     }
   }, [navigate]);
 
+  // Fetch user's listings - FIXED: Using correct endpoint
   const fetchUserListings = useCallback(async () => {
     try {
-      const res = await axios.get("/users/listings", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setListings(res.data);
+      // Get all listings and filter by user
+      const res = await axios.get("/listings");
+      
+      // Get user ID from token
+      const token = localStorage.getItem("token");
+      const tokenData = token ? JSON.parse(atob(token.split('.')[1])) : null;
+      
+      if (tokenData && tokenData.id) {
+        // Filter listings created by current user
+        const userListings = res.data.filter(
+          listing => listing.createdBy && listing.createdBy._id === tokenData.id
+        );
+        setListings(userListings);
+      }
     } catch (err) {
       console.error("Failed to fetch listings", err);
     } finally {
@@ -66,6 +97,13 @@ export default function Profile() {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    // NOTE: Since you don't have a profile update endpoint,
+    // this will show a message that it's not available yet
+    showToast("Profile update feature coming soon!", "info");
+    setEditing(false);
+    
+    // When you add the endpoint, uncomment this:
+    /*
     try {
       const response = await axios.put("/users/profile", formData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -76,11 +114,17 @@ export default function Profile() {
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to update profile", "error");
     }
+    */
   };
 
   const handleDeleteListing = async (id) => {
     if (!window.confirm("Are you sure you want to delete this listing?")) return;
     
+    // NOTE: Delete endpoint doesn't exist yet
+    showToast("Delete feature coming soon!", "info");
+    
+    // When you add the endpoint, uncomment this:
+    /*
     try {
       await axios.delete(`/listings/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -90,9 +134,15 @@ export default function Profile() {
     } catch (err) {
       showToast("Failed to delete listing", "error");
     }
+    */
   };
 
   const handleMarkAsSold = async (id) => {
+    // NOTE: Status update endpoint doesn't exist yet
+    showToast("Mark as sold feature coming soon!", "info");
+    
+    // When you add the endpoint, uncomment this:
+    /*
     try {
       await axios.patch(`/listings/${id}/status`, 
         { status: "sold" },
@@ -103,19 +153,11 @@ export default function Profile() {
     } catch (err) {
       showToast("Failed to update status", "error");
     }
+    */
   };
 
   const handleEditListing = (id) => {
-    // Since there's no edit page yet, we can either:
-    // Option 1: Navigate to create with pre-filled data (if supported)
-    // Option 2: Show a message that edit is coming soon
-    // Option 3: Open a modal for quick edit
-    
-    // For now, showing a toast message
     showToast("Edit functionality coming soon!", "info");
-    
-    // If you have an edit page later, uncomment this:
-    // navigate(`/edit/${id}`);
   };
 
   const getInitials = (name) => {
@@ -218,6 +260,7 @@ export default function Profile() {
                   </div>
                 </div>
 
+                {/* These fields will be empty initially */}
                 {user.college && (
                   <div className="profile__detail">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
@@ -232,7 +275,7 @@ export default function Profile() {
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                     </svg>
-                    +91 {user.phone}
+                    {user.phone && `+91 ${user.phone}`}
                   </div>
                 )}
 
@@ -241,7 +284,7 @@ export default function Profile() {
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
                       <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                     </svg>
-                    Semester {user.semester}
+                    {user.semester && `Semester ${user.semester}`}
                   </div>
                 )}
               </>
@@ -463,6 +506,7 @@ export default function Profile() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
+                  disabled // Email shouldn't be editable usually
                 />
               </div>
 
