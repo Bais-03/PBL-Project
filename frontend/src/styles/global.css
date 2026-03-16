@@ -1,20 +1,351 @@
 /* global.css */
+:root {
+  /* New Color Palette */
+  --primary-dark: #1A3263;    /* Deep navy blue */
+  --primary: #547792;         /* Muted blue-gray */
+  --accent: #FAB95B;          /* Warm gold */
+  --background-light: #E8E2DB; /* Soft cream */
+  
+  /* Derived colors */
+  --bg-main: var(--primary-dark);
+  --bg-card: rgba(232, 226, 219, 0.95);
+  --primary-glow: rgba(250, 185, 91, 0.15);
+  --text-primary: #1A3263;
+  --text-secondary: #547792;
+  --text-muted: #6c757d;
+  --border: rgba(26, 50, 99, 0.1);
+  --glass: rgba(232, 226, 219, 0.2);
+  
+  /* Shadows & Blurs */
+  --shadow: 0 4px 6px rgba(26, 50, 99, 0.1);
+  --shadow-lg: 0 20px 40px rgba(26, 50, 99, 0.2);
+  --shadow-xl: 0 25px 50px rgba(26, 50, 99, 0.25);
+  --blur: 12px;
+  
+  /* Status colors (keeping but adjusting) */
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
 }
 
 body {
-  background-color: #f4f6fb;
-  color: #1f2937;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #1A3263 0%, #547792 100%);
+  min-height: 100vh;
+  color: var(--text-primary);
+  line-height: 1.5;
 }
 
-a {
-  text-decoration: none;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-button {
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Utility classes */
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #E8E2DB 25%, #fff 50%, #E8E2DB 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E8E2DB;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #547792;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1A3263;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(232, 226, 219, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-card {
+  background: rgba(232, 226, 219, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #1A3263 0%, #547792 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1A3263 0%, #547792 100%);
+  color: #E8E2DB;
+  box-shadow: 0 4px 15px rgba(26, 50, 99, 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(250, 185, 91, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #E8E2DB;
+  color: #1A3263;
+  border: 2px solid #1A3263;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #1A3263 0%, #547792 100%);
+  color: #E8E2DB;
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+  animation: slideIn 0.5s ease-out;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #1A3263;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(26, 50, 99, 0.1);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #FAB95B;
+  box-shadow: 0 0 0 3px rgba(250, 185, 91, 0.1);
+}
+
+.form-input.error {
+  border-color: #ef4444;
+}
+
+.form-input.success {
+  border-color: #10b981;
+}
+
+/* Card styles */
+.card {
+  background: #E8E2DB;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  animation: scaleIn 0.4s ease-out;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background: rgba(26, 50, 99, 0.1);
+  color: #1A3263;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-warning {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+/* Grid layouts */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-3, .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
 }

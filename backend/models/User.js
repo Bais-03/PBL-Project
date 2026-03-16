@@ -6,7 +6,11 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     collegeId: { type: String, required: true },
-    isVerified: { type: Boolean, default: true }
+    isVerified: { type: Boolean, default: true },
+    // ADD THESE NEW FIELDS
+    phone: { type: String, default: "" },
+    college: { type: String, default: "" },
+    semester: { type: String, default: "" },
   },
   { timestamps: true }
 );
