@@ -241,91 +241,167 @@ export default function Dashboard() {
   return (
     <div className="page">
       <Navbar scrolled={scrolled} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-
-      {/* ── HERO ──────────────────────────────────────────────────── */}
-      <section id="home" className="hero">
-        <div className="hero__bg">
+     <div className="hero-stats-wrapper">
+       <div className="hero__bg">
           <div className="hero__orb hero__orb--1" />
           <div className="hero__orb hero__orb--2" />
           <div className="hero__grid" />
         </div>
+        {/* ── HERO ──────────────────────────────────────────────────── */}
+        <section id="home" className="hero">
 
-        <div className="hero__content">
-          <div className="hero__badge">
-            <span className="hero__badge-dot" />
-            Trusted by 1,200+ students across India
-          </div>
-
-          <h1 className="hero__title">
-            The Campus<br />
-            <span className="hero__title-accent">Marketplace</span><br />
-            Built for Students
-          </h1>
-
-          <p className="hero__desc">
-            Buy, sell, and connect within your verified college network.
-            Textbooks, electronics, housing, tutoring — everything a student needs,
-            in one trusted place.
-          </p>
-
-          <div className="hero__actions">
-            <Link to="/register" className="btn btn--primary">
-              Start for Free
-              <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"/>
-              </svg>
-            </Link>
-            <a
-              href="#how"
-              className="btn btn--ghost"
-              onClick={(e) => { e.preventDefault(); document.querySelector("#how").scrollIntoView({ behavior: "smooth" }); }}
-            >
-              See How It Works
-            </a>
-          </div>
-
-          {/* Hero card preview */}
-          {/* <div className="hero__card-preview">
-            <div className="preview-card">
-              <div className="preview-card__img" style={{ background: "linear-gradient(135deg,#1A3263,#547792)" }}>
-                <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
-                  <path d="M8 34V12L20 6l12 6v22H8z" stroke="#FAB95B" strokeWidth="2" strokeLinejoin="round"/>
-                  <rect x="14" y="20" width="12" height="14" rx="1" stroke="#FAB95B" strokeWidth="1.5"/>
-                </svg>
-              </div>
-              <div className="preview-card__info">
-                <p className="preview-card__title">Engineering Mathematics — Kreyszig</p>
-                <p className="preview-card__sub">Good condition · 3rd year CSE</p>
-              </div>
-              <span className="preview-card__price">₹280</span>
+          <div className="hero__content">
+            <div className="hero__badge">
+              <span className="hero__badge-dot" />
+              Trusted by 1,200+ students across India
             </div>
-            <div className="preview-card preview-card--offset">
-              <div className="preview-card__img" style={{ background: "linear-gradient(135deg,#FAB95B,#f0a040)" }}>
-                <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
-                  <rect x="6" y="10" width="28" height="20" rx="3" stroke="#1A3263" strokeWidth="2"/>
-                  <path d="M14 30v4m12-4v4M10 34h20" stroke="#1A3263" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <div className="preview-card__info">
-                <p className="preview-card__title">Dell Laptop — i5, 8GB RAM</p>
-                <p className="preview-card__sub">Excellent condition · 2 years old</p>
-              </div>
-              <span className="preview-card__price">₹22,000</span>
-            </div>
-          </div> */}
-        </div>
-      </section>
 
-      {/* ── STATS ─────────────────────────────────────────────────── */}
-      <section className="stats-section" ref={statsRef}>
-        <div className="container">
-          <div className="stats-grid">
-            {STATS.map((s) => (
-              <StatCard key={s.label} {...s} animate={statsInView} />
-            ))}
+            <h1 className="hero__title">
+              The Campus<br />
+              <span className="hero__title-accent">Marketplace</span><br />
+              Built for Students
+            </h1>
+
+            <p className="hero__desc">
+              Buy, sell, and connect within your verified college network.
+              Textbooks, electronics, housing, tutoring — everything a student needs,
+              in one trusted place.
+            </p>
+
+            <div className="hero__actions">
+              <Link to="/register" className="btn btn--primary">
+                Start for Free
+                <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                </svg>
+              </Link>
+              <a
+                href="#how"
+                className="btn btn--ghost"
+                onClick={(e) => { e.preventDefault(); document.querySelector("#how").scrollIntoView({ behavior: "smooth" }); }}
+              >
+                See How It Works
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+
+          <div className="hero-visual">
+            {/* Card 1 — back — Textbook listing */}
+            <div className="visual-card card-1">
+              <div className="vc-header vc-header--navy">
+                <div className="vc-header-eyebrow">Textbooks</div>
+                <div className="vc-header-title">Engineering Mathematics II</div>
+                <div className="vc-header-sub">3rd Sem · Pune University</div>
+              </div>
+              <div className="vc-body">
+                <div className="vc-seller-row">
+                  <div className="vc-avatar vc-avatar--navy">RS</div>
+                  <div>
+                    <div className="vc-name">Rahul Sharma</div>
+                    <div className="vc-meta">PICT · 4.8 ★ seller</div>
+                  </div>
+                  <div className="vc-price-chip">₹320</div>
+                </div>
+                <div className="vc-divider" />
+                <div className="vc-label">Condition</div>
+                <div className="vc-condition-bar">
+                  <div className="vc-cond-dot vc-cond-dot--on" />
+                  <div className="vc-cond-dot vc-cond-dot--on" />
+                  <div className="vc-cond-dot vc-cond-dot--on" />
+                  <div className="vc-cond-dot vc-cond-dot--on" />
+                  <div className="vc-cond-dot" />
+                  <span className="vc-cond-label">Like New</span>
+                </div>
+                <div className="vc-tag-row">
+                  <span className="vc-tag">Calculus</span>
+                  <span className="vc-tag">Verified</span>
+                  <span className="vc-tag">Pickup only</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2 — middle — Tutor profile */}
+            <div className="visual-card card-2">
+              <div className="vc-header vc-header--gold">
+                <div className="vc-header-eyebrow">Notes</div>
+                <div className="vc-header-title">Data Structures & Algorithms</div>
+                <div className="vc-header-sub">Online · Flexible timings</div>
+              </div>
+              <div className="vc-body">
+                <div className="vc-seller-row">
+                  <div className="vc-avatar vc-avatar--gold">AK</div>
+                  <div>
+                    <div className="vc-name">Arjun Kamat</div>
+                    <div className="vc-meta">PICT · 4.9 ★</div>
+                  </div>
+                  <div className="vc-price-chip">₹200<span>/hr</span></div>
+                </div>
+                <div className="vc-divider" />
+                <div className="vc-label">Availability this week</div>
+                <div className="vc-slots-grid">
+                  <div className="vc-slot vc-slot--taken">Mon</div>
+                  <div className="vc-slot vc-slot--taken">Tue</div>
+                  <div className="vc-slot vc-slot--free">Wed</div>
+                  <div className="vc-slot vc-slot--free">Thu</div>
+                  <div className="vc-slot vc-slot--free">Sat</div>
+                </div>
+                <div className="vc-tag-row">
+                  <span className="vc-tag">Python</span>
+                  <span className="vc-tag">DSA</span>
+                  <span className="vc-tag">ML basics</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3 — front — Electronics listing */}
+            <div className="visual-card card-3">
+              <div className="vc-header vc-header--slate">
+                <div className="vc-header-eyebrow">Electronics</div>
+                <div className="vc-header-title">HP Scientific Calculator fx-991</div>
+                <div className="vc-header-sub">Barely used · Includes original cover</div>
+              </div>
+              <div className="vc-body">
+                <div className="vc-stat-strip">
+                  <div className="vc-stat">
+                    <div className="vc-stat-val">₹800</div>
+                    <div className="vc-stat-lbl">Price</div>
+                  </div>
+                  <div className="vc-stat-sep" />
+                  <div className="vc-stat">
+                    <div className="vc-stat-val">PICT</div>
+                    <div className="vc-stat-lbl">Campus</div>
+                  </div>
+                  <div className="vc-stat-sep" />
+                  <div className="vc-stat">
+                    <div className="vc-stat-val">2h</div>
+                    <div className="vc-stat-lbl">Listed</div>
+                  </div>
+                </div>
+                <div className="vc-divider" />
+                <div className="vc-seller-row">
+                  <div className="vc-avatar vc-avatar--slate">NP</div>
+                  <div>
+                    <div className="vc-name">Neha Patil</div>
+                    <div className="vc-meta">PICT · Verified student</div>
+                  </div>
+                </div>
+                <div className="vc-cta">View Listing →</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── STATS ─────────────────────────────────────────────────── */}
+        <section className="stats-section" ref={statsRef}>
+          <div className="container">
+            <div className="stats-grid">
+              {STATS.map((s) => (
+                <StatCard key={s.label} {...s} animate={statsInView} />
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* ── ABOUT ─────────────────────────────────────────────────── */}
       <section id="about" className="about-section" ref={aboutRef}>
@@ -503,7 +579,7 @@ export default function Dashboard() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
                   </svg>
-                  <span>Bengaluru, Karnataka, India</span>
+                  <span>Pune, Maharashtra, India</span>
                 </div>
               </div>
             </div>

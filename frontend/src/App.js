@@ -12,6 +12,12 @@ import CreateListing from "./pages/CreateListing";
 import BookedItems from "./components/BookedItems";
 import Profile from "./pages/Profile"; // Add Profile import
 
+import ForgotPassword from "./pages/ForgotPassword";
+
+import ResetPassword from "./pages/ResetPassword";
+
+
+
 function App() {
   return (
     <AuthProvider>
@@ -60,6 +66,10 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>
         </AnimatePresence>
       </BrowserRouter>
