@@ -4,18 +4,17 @@ import { motion } from "framer-motion";
 import axios from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/auth.css";
-import "../styles/form.css";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [email, setEmail]               = useState("");
-  const [password, setPassword]         = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading]       = useState(false);
-  const [errors, setErrors]             = useState({});
-  const [touched, setTouched]           = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   const validateForm = () => {
     const newErrors = {};
@@ -67,26 +66,30 @@ export default function Login() {
   };
 
   const containerVariants = {
-    hidden:  { opacity: 0 },
+    hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
   };
 
   const itemVariants = {
-    hidden:  { y: 12, opacity: 0 },
+    hidden: { y: 12, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 120, damping: 14 } },
   };
 
+  const isSuccess = (field) =>
+    touched[field] && !errors[field] && (field === "email" ? email : password);
+
   return (
-    <div className="login-container">
+    <div className="auth-container">
+      <div className="orb-secondary"></div>
       <motion.div
-        className="login-card"
+        className="auth-card"
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
       >
         {/* Header */}
         <motion.div
-          className="login-header"
+          className="auth-header"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -108,7 +111,7 @@ export default function Login() {
           </motion.div>
         )}
 
-        <form onSubmit={handleLogin} className="login-form" noValidate>
+        <form onSubmit={handleLogin} className="auth-form" noValidate>
           {/* Email */}
           <motion.div
             className="form-group"
@@ -128,16 +131,14 @@ export default function Login() {
                 className={
                   touched.email && errors.email
                     ? "error"
-                    : touched.email && !errors.email && email
+                    : isSuccess("email")
                     ? "success"
                     : ""
                 }
                 disabled={isLoading}
                 autoComplete="email"
               />
-              {touched.email && !errors.email && email && (
-                <span className="input-success-icon">&#10003;</span>
-              )}
+              {isSuccess("email") && <span className="input-success-icon">✓</span>}
             </div>
             {touched.email && errors.email && (
               <motion.span
@@ -169,7 +170,7 @@ export default function Login() {
                 className={
                   touched.password && errors.password
                     ? "error"
-                    : touched.password && !errors.password && password
+                    : isSuccess("password")
                     ? "success"
                     : ""
                 }
@@ -197,20 +198,22 @@ export default function Login() {
             )}
           </motion.div>
 
-          {/* Forgot */}
+          {/* Forgot Password Link */}
           <motion.div
             className="forgot-password"
             variants={itemVariants}
             initial="hidden"
             animate="visible"
           >
-            <Link to="/forgot-password">Forgot password?</Link>
+            <Link to="/forgot-password" className="forgot-password-link">
+              Forgot password?
+            </Link>
           </motion.div>
 
           {/* Submit */}
           <motion.button
             type="submit"
-            className={`login-btn ${isLoading ? "loading" : ""}`}
+            className={`auth-btn ${isLoading ? "loading" : ""}`}
             disabled={isLoading}
             variants={itemVariants}
             initial="hidden"
@@ -218,17 +221,17 @@ export default function Login() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-            {isLoading ? "" : "Sign In"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </motion.button>
 
           {/* Footer */}
           <motion.div
-            className="login-footer"
+            className="auth-footer"
             variants={itemVariants}
             initial="hidden"
             animate="visible"
           >
-            Don&apos;t have an account?<Link to="/register">Create account</Link>
+            Don't have an account? <Link to="/register">Create account</Link>
           </motion.div>
         </form>
 

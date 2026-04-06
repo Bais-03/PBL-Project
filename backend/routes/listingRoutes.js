@@ -18,7 +18,7 @@ router.get("/:id", getListingById);
 // 🔒 PROTECTED ROUTES
 router.post("/", campusOnly, createListing);
 
-// Add these new routes for profile functionality
+// Delete listing
 router.delete("/:id", auth, async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
@@ -40,6 +40,7 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+// Update listing status
 router.patch("/:id/status", auth, async (req, res) => {
   try {
     const { status } = req.body;
