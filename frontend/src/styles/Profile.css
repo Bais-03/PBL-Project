@@ -799,3 +799,239 @@
     flex-direction: column;
   }
 }
+
+
+/* Form Improvements */
+.profile__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.required-star {
+  color: var(--error);
+  margin-left: 2px;
+}
+
+.field-error {
+  display: block;
+  color: var(--error);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.form-hint {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+input.error,
+select.error,
+textarea.error {
+  border-color: var(--error);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+input.error:focus,
+select.error:focus,
+textarea.error:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+input.read-only {
+  background-color: var(--cream-soft);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font-b);
+  font-size: 0.875rem;
+  color: var(--navy-deep);
+  transition: all 0.2s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26,50,99,0.1);
+}
+
+.textarea-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.character-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Form Section */
+.profile__form-section {
+  margin: 1.5rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.profile__form-section h4 {
+  font-family: var(--font-d);
+  font-size: 1rem;
+  color: var(--navy-deep);
+  margin-bottom: 0.25rem;
+}
+
+.section-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Input with prefix */
+.input-prefix {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.input-prefix:focus-within {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26,50,99,0.1);
+}
+
+.input-prefix .prefix {
+  padding: 0.875rem 0 0.875rem 1rem;
+  background: var(--cream-soft);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  border-right: 1.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.input-prefix input {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding: 0.875rem 1rem;
+}
+
+.input-prefix input:focus {
+  box-shadow: none;
+}
+
+.input-prefix.error {
+  border-color: var(--error);
+}
+
+/* Spinner small */
+.spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+}
+
+/* Bio in profile */
+.profile__bio {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--cream-soft);
+  border-radius: 12px;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--navy-deep);
+  line-height: 1.6;
+  border-left: 3px solid var(--gold);
+}
+
+/* Social links in profile */
+.profile__social {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.profile__social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--slate);
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+  transition: all 0.2s ease;
+}
+
+.profile__social-link:hover {
+  color: var(--navy);
+  transform: translateX(4px);
+}
+
+.profile__social-link svg {
+  color: var(--gold-dark);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .input-prefix .prefix {
+    background: #1a2f50;
+    color: #8fa0b6;
+  }
+  
+  input.read-only {
+    background: #1a2f50;
+    color: #8fa0b6;
+  }
+  
+  .profile__bio {
+    background: #1a2f50;
+    color: var(--cream);
+  }
+  
+  .profile__social-link {
+    color: #8fa0b6;
+  }
+  
+  .profile__social-link:hover {
+    color: var(--gold);
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .profile__form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .input-prefix {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .input-prefix .prefix {
+    border-right: none;
+    border-bottom: 1.5px solid var(--border);
+    padding: 0.5rem 1rem;
+  }
+}

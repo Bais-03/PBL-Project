@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import { useBooking } from "../context/BookingContext";
 import "../styles/Browse.css";
 
 /* ─── Constants ──────────────────────────────────────────────────── */
-const BOOKING_DURATION_MS = 5 * 60 * 1000; // Changed from 15 to 5 minutes
 const CATEGORIES = ["All", "Textbook", "Notes", "Electronics", "Housing", "Tutoring", "Other"];
 
 /* ─── Sample data ────────────────────────────────────────────────── */
@@ -34,7 +34,7 @@ const SAMPLE = [
     _id: "4", title: "Casio FX-991EX Scientific Calculator",
     category: "Electronics", semester: null,
     description: "Used for 2 semesters. All functions working. Cover included.",
-    priceType: "negotiable", price: null, status: "pending", image: null,
+    priceType: "negotiable", price: null, status: "available", image: null,
     contact: { name: "Sneha Kulkarni", phone: "9001234567", whatsapp: "9001234567", email: "sneha@iitb.ac.in", preferMode: "In-person only", availability: "Campus only — near Library" },
   },
   {
@@ -73,33 +73,6 @@ function PriceDisplay({ priceType, price }) {
   return <span className="lc__price lc__price--free">Free</span>;
 }
 
-/* ─── Booking timer ──────────────────────────────────────────────── */
-function BookingTimer({ expiresAt, onExpire }) {
-  const [remaining, setRemaining] = useState(expiresAt - Date.now());
-  useEffect(() => {
-    const id = setInterval(() => {
-      const r = expiresAt - Date.now();
-      if (r <= 0) { clearInterval(id); onExpire(); } else setRemaining(r);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [expiresAt, onExpire]);
-  const m   = Math.floor(remaining / 60000);
-  const s   = Math.floor((remaining % 60000) / 1000);
-  const pct = ((remaining / BOOKING_DURATION_MS) * 100).toFixed(1);
-  return (
-    <div className="booking-timer">
-      <svg viewBox="0 0 36 36" className="timer-ring">
-        <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(26,50,99,0.1)" strokeWidth="3" />
-        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#FAB95B" strokeWidth="3"
-          strokeDasharray={`${pct} ${100 - pct}`} strokeDashoffset="25" strokeLinecap="round"
-          style={{ transition: "stroke-dasharray 1s linear" }}
-        />
-      </svg>
-      <span className="timer-text">{m}:{String(s).padStart(2, "0")}</span>
-    </div>
-  );
-}
-
 /* ─── Category icon ──────────────────────────────────────────────── */
 function CategoryIcon({ category, color }) {
   const icons = {
@@ -114,14 +87,14 @@ function CategoryIcon({ category, color }) {
 
 /* ─── Contact modal ──────────────────────────────────────────────── */
 function ContactModal({ item, onClose }) {
-  // Handle both data structures
-  const contactInfo = item.contact || {
-    name: item.contactName,
-    phone: item.contactPhone,
-    whatsapp: item.contactWhatsapp,
-    email: item.contactEmail,
-    preferMode: item.preferMode,
-    availability: item.availability
+  // Handle multiple possible data structures
+  const contactInfo = {
+    name: item.contact?.name || item.contactName || item.seller?.name || "Anonymous",
+    phone: item.contact?.phone || item.contactPhone || "",
+    whatsapp: item.contact?.whatsapp || item.contactWhatsapp || "",
+    email: item.contact?.email || item.contactEmail || "",
+    preferMode: item.contact?.preferMode || item.preferMode || "",
+    availability: item.contact?.availability || item.availability || ""
   };
 
   const [copiedField, setCopiedField] = useState(null);
@@ -133,10 +106,11 @@ function ContactModal({ item, onClose }) {
     });
   };
 
+  const hasContactInfo = contactInfo.phone || contactInfo.whatsapp || contactInfo.email;
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="modal__header">
           <div>
             <p className="modal__label">Contact Seller</p>
@@ -149,16 +123,23 @@ function ContactModal({ item, onClose }) {
           </button>
         </div>
 
-        {/* Seller name */}
         <div className="modal__seller">
-          <div className="modal__avatar">{contactInfo.name ? contactInfo.name.charAt(0).toUpperCase() : "?"}</div>
+          <div className="modal__avatar">
+            {contactInfo.name ? contactInfo.name.charAt(0).toUpperCase() : "?"}
+          </div>
           <div>
-            <p className="modal__seller-name">{contactInfo.name || "Anonymous"}</p>
-            {contactInfo.availability && <p className="modal__avail">Available: {contactInfo.availability}</p>}
+            <p className="modal__seller-name">{contactInfo.name}</p>
+            {contactInfo.availability && (
+              <p className="modal__avail">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12" style={{ display: "inline", marginRight: "4px" }}>
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                </svg>
+                Available: {contactInfo.availability}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Preferred mode */}
         {contactInfo.preferMode && (
           <div className="modal__preferred">
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
@@ -168,7 +149,6 @@ function ContactModal({ item, onClose }) {
           </div>
         )}
 
-        {/* Contact options */}
         <div className="modal__contacts">
           {contactInfo.phone && (
             <div className="modal__contact-row">
@@ -182,7 +162,9 @@ function ContactModal({ item, onClose }) {
                 <span className="modal__contact-val">+91 {contactInfo.phone}</span>
               </div>
               <div className="modal__contact-actions">
-                <a href={`tel:+91${contactInfo.phone}`} className="modal__action-btn modal__action-btn--call">Call</a>
+                <a href={`tel:+91${contactInfo.phone}`} className="modal__action-btn modal__action-btn--call">
+                  Call
+                </a>
                 <button className="modal__action-btn modal__action-btn--copy" onClick={() => copyText(contactInfo.phone, "phone")}>
                   {copiedField === "phone" ? "Copied!" : "Copy"}
                 </button>
@@ -224,7 +206,9 @@ function ContactModal({ item, onClose }) {
                 <span className="modal__contact-val">{contactInfo.email}</span>
               </div>
               <div className="modal__contact-actions">
-                <a href={`mailto:${contactInfo.email}`} className="modal__action-btn modal__action-btn--call">Mail</a>
+                <a href={`mailto:${contactInfo.email}`} className="modal__action-btn modal__action-btn--call">
+                  Mail
+                </a>
                 <button className="modal__action-btn modal__action-btn--copy" onClick={() => copyText(contactInfo.email, "email")}>
                   {copiedField === "email" ? "Copied!" : "Copy"}
                 </button>
@@ -232,12 +216,19 @@ function ContactModal({ item, onClose }) {
             </div>
           )}
 
-          {!contactInfo.phone && !contactInfo.whatsapp && !contactInfo.email && (
-            <p className="modal__no-contact">No contact details provided. Try booking this item to notify the seller.</p>
+          {!hasContactInfo && (
+            <div className="modal__no-contact">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="32" height="32" style={{ marginBottom: "0.5rem" }}>
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <p>No contact details provided.</p>
+              <p style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+                Try booking this item to notify the seller.
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Price context */}
         <div className="modal__price-context">
           {(item.priceType === "negotiable" || item.price === null || item.price === 0) && (
             <p>
@@ -257,30 +248,39 @@ function ContactModal({ item, onClose }) {
           )}
         </div>
 
-        <button className="modal__dismiss" onClick={onClose} type="button">Close</button>
+        <button className="modal__dismiss" onClick={onClose} type="button">
+          Close
+        </button>
       </div>
     </div>
   );
 }
 
 /* ─── Listing card ───────────────────────────────────────────────── */
-function ListingCard({ item, onBook, onCancelBook, onContact, bookingState }) {
-  const isBooked = bookingState?.id === item._id;
-  // Removed isBookedOther variable and its blocking logic
+function ListingCard({ item, onBook, onContact, isBooked, bookingInProgress }) {
   const status = item.status || "available";
   const accentColor = CAT_COLORS[item.category] || "#547792";
 
   const statusMap = {
     available: { label: "Available", cls: "status--available" },
-    pending:   { label: "Pending",   cls: "status--pending"   },
-    sold:      { label: "Sold",      cls: "status--sold"      },
+    booked:    { label: "Booked",    cls: "status--pending" },
+    sold:      { label: "Sold",      cls: "status--sold" },
   };
+
+  const handleBookClick = async () => {
+    if (bookingInProgress) return;
+    await onBook(item._id);
+  };
+
+  // Only show available items (booked items are filtered out)
+  if (status !== "available") {
+    return null;
+  }
 
   return (
     <div className={`lc ${isBooked ? "lc--booked" : ""} ${status === "sold" ? "lc--sold" : ""}`}>
       <div className="lc__bar" style={{ background: accentColor }} />
 
-      {/* Image */}
       <div className="lc__img-wrap">
         {item.image ? (
           <img src={item.image} alt={item.title} className="lc__img" />
@@ -289,17 +289,8 @@ function ListingCard({ item, onBook, onCancelBook, onContact, bookingState }) {
             <CategoryIcon category={item.category} color={accentColor} />
           </div>
         )}
-        {isBooked && (
-          <div className="lc__booked-badge">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="11" height="11">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-            </svg>
-            Reserved by you
-          </div>
-        )}
       </div>
 
-      {/* Body */}
       <div className="lc__body">
         <div className="lc__meta">
           <span className="lc__category" style={{ color: accentColor, borderColor: `${accentColor}28`, background: `${accentColor}0d` }}>
@@ -316,35 +307,26 @@ function ListingCard({ item, onBook, onCancelBook, onContact, bookingState }) {
           <div className="lc__price-wrap">
             <PriceDisplay priceType={item.priceType} price={item.price} />
             <span className={`lc__status ${statusMap[status]?.cls}`}>
-              {isBooked ? "Reserved by you" : statusMap[status]?.label}
+              {statusMap[status]?.label}
             </span>
           </div>
-          {isBooked && (
-            <BookingTimer expiresAt={bookingState.expiresAt} onExpire={() => onCancelBook(item._id)} />
-          )}
         </div>
 
-        {/* Actions - Removed !isBookedOther condition to allow browsing all items */}
-        {status !== "sold" && (
-          <div className="lc__actions">
-            {isBooked ? (
-              <button className="lc__btn lc__btn--cancel" onClick={() => onCancelBook(item._id)}>
-                Cancel Reservation
-              </button>
-            ) : (
-              <button className="lc__btn lc__btn--book" onClick={() => onBook(item._id)} disabled={status === "pending"}>
-                {status === "pending" ? "Pending" : "Book Now"}
-              </button>
-            )}
-            <button className="lc__btn lc__btn--contact" onClick={() => onContact(item)}>
-              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-              </svg>
-              Contact Seller
-            </button>
-          </div>
-        )}
-        {/* Removed the isBookedOther notice block */}
+        <div className="lc__actions">
+          <button 
+            className="lc__btn lc__btn--book" 
+            onClick={handleBookClick}
+            disabled={bookingInProgress}
+          >
+            {bookingInProgress ? "Booking..." : "Book Now"}
+          </button>
+          <button className="lc__btn lc__btn--contact" onClick={() => onContact(item)}>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+            </svg>
+            Contact Seller
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -353,32 +335,43 @@ function ListingCard({ item, onBook, onCancelBook, onContact, bookingState }) {
 /* ─── Browse page ────────────────────────────────────────────────── */
 export default function Browse() {
   const navigate = useNavigate();
-  const [listings,     setListings]     = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [search,       setSearch]       = useState("");
-  const [category,     setCategory]     = useState("All");
-  const [sortBy,       setSortBy]       = useState("newest");
-  const [bookingState, setBookingState] = useState(null);
-  const [contactItem,  setContactItem]  = useState(null);
-  const [toast,        setToast]        = useState(null);
-  const [sidebarOpen,  setSidebarOpen]  = useState(false);
+  const { bookedItems, fetchBookedItems, createBookingRequest } = useBooking();
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
+  const [contactItem, setContactItem] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bookingInProgress, setBookingInProgress] = useState(null);
   const toastRef = useRef(null);
   const sidebarRef = useRef(null);
 
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const res = await axios.get("/listings", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        setListings(res.data);
-      } catch { setListings(SAMPLE); }
-      finally { setLoading(false); }
-    };
-    fetch();
-  }, []);
+  const fetchListings = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/listings", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      // Filter out items that are booked by anyone (status === "booked")
+      // Only show available items
+      const availableListings = res.data.filter(item => item.status === "available");
+      setListings(availableListings);
+    } catch {
+      // For sample data, only show available items
+      const availableSamples = SAMPLE.filter(item => item.status === "available");
+      setListings(availableSamples);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Close sidebar when clicking outside
+  useEffect(() => {
+    fetchListings();
+    fetchBookedItems();
+  }, [fetchBookedItems]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -395,14 +388,21 @@ export default function Browse() {
     toastRef.current = setTimeout(() => setToast(null), 4000);
   };
 
-  const handleBook = (id) => {
-    setBookingState({ id, expiresAt: Date.now() + BOOKING_DURATION_MS });
-    showToast("Item reserved! You have 5 minutes to complete the transaction.", "success");
-  };
-
-  const handleCancelBook = () => {
-    setBookingState(null);
-    showToast("Reservation cancelled.", "info");
+  const handleBook = async (id) => {
+    setBookingInProgress(id);
+    
+    // Optional: Show a modal to get message from user
+    const message = prompt("Optional: Add a message to the seller (e.g., when you'd like to pick up the item):");
+    
+    const result = await createBookingRequest(id, message);
+    setBookingInProgress(null);
+    
+    if (result.success) {
+      showToast("Booking request sent! The seller will review your request.", "success");
+      await fetchListings(); // Refresh listings to remove the booked item
+    } else {
+      showToast(result.error || "Failed to send booking request", "error");
+    }
   };
 
   const handleLogout = () => {
@@ -418,12 +418,23 @@ export default function Browse() {
     setSidebarOpen(false);
   };
 
+  const handleBookings = () => {
+    navigate("/bookings");
+    setSidebarOpen(false);
+  };
+
+  // Track which items are booked by current user (these will not appear in browse)
+  const bookedItemIds = new Set(bookedItems.map(item => item._id));
+
   const filtered = listings
     .filter((l) => {
+      // Only show items that are available and not booked by current user
       const matchCat = category === "All" || l.category === category;
       const q = search.toLowerCase();
       const matchQ = !q || l.title?.toLowerCase().includes(q) || l.description?.toLowerCase().includes(q);
-      return matchCat && matchQ;
+      // Also filter out items that are booked by current user (should already be filtered but double-check)
+      const notBookedByMe = !bookedItemIds.has(l._id);
+      return matchCat && matchQ && notBookedByMe;
     })
     .sort((a, b) => {
       if (sortBy === "price-asc")  return (a.price || 0) - (b.price || 0);
@@ -433,10 +444,8 @@ export default function Browse() {
 
   return (
     <div className="browse">
-      {/* Contact modal */}
       {contactItem && <ContactModal item={contactItem} onClose={() => setContactItem(null)} />}
 
-      {/* Toast */}
       {toast && (
         <div className={`toast toast--${toast.type}`}>
           {toast.type === "success" && (
@@ -448,7 +457,6 @@ export default function Browse() {
         </div>
       )}
 
-      {/* Header with hamburger menu */}
       <div className="browse__header">
         <div className="browse__header-left">
           <button 
@@ -477,7 +485,6 @@ export default function Browse() {
         </div>
       </div>
 
-      {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`} ref={sidebarRef}>
         <div className="sidebar__header">
           <h3 className="sidebar__title">Menu</h3>
@@ -494,6 +501,12 @@ export default function Browse() {
             </svg>
             <span>Profile</span>
           </button>
+          <button onClick={handleBookings} className="sidebar__item">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM13 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2zM13 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2z" />
+            </svg>
+            <span>My Bookings ({bookedItems.length})</span>
+          </button>
           <button onClick={handleLogout} className="sidebar__item sidebar__item--logout">
             <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
@@ -503,10 +516,8 @@ export default function Browse() {
         </div>
       </div>
       
-      {/* Overlay when sidebar is open */}
       {sidebarOpen && <div className="sidebar__overlay" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Search + sort */}
       <div className="browse__controls">
         <div className="browse__search-wrap">
           <svg className="browse__search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
@@ -534,7 +545,6 @@ export default function Browse() {
         </select>
       </div>
 
-      {/* Category chips */}
       <div className="browse__chips">
         {CATEGORIES.map((c) => (
           <button
@@ -547,7 +557,6 @@ export default function Browse() {
         ))}
       </div>
 
-      {/* Grid */}
       {loading ? (
         <div className="browse__loading">
           <div className="browse__spinner" />
@@ -566,14 +575,14 @@ export default function Browse() {
         </div>
       ) : (
         <div className="browse__grid">
-          {filtered.map((item, i) => (
-            <div key={item._id} style={{ "--i": i }}>
+          {filtered.map((item) => (
+            <div key={item._id}>
               <ListingCard
                 item={item}
                 onBook={handleBook}
-                onCancelBook={handleCancelBook}
                 onContact={setContactItem}
-                bookingState={bookingState}
+                isBooked={bookedItemIds.has(item._id)}
+                bookingInProgress={bookingInProgress === item._id}
               />
             </div>
           ))}

@@ -1042,3 +1042,21 @@
     width: 240px;
   }
 }
+
+.lc__btn--disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border: none;
+  opacity: 0.6;
+}
+
+.lc__btn--disabled:hover {
+  background: #e5e7eb;
+  transform: none;
+}
+
+.lc__booked-badge--other {
+  background: #6b7280;
+  color: white;
+}
