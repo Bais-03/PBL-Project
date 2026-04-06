@@ -49,18 +49,31 @@ const listingSchema = new mongoose.Schema(
       type: String,
     },
     image: {
-      type: String, // Will store base64 or URL
+      type: String,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    // ADD THIS NEW FIELD
     status: {
       type: String,
-      enum: ["available", "booked", "sold"],
+      enum: ["available", "pending", "booked", "sold"], // Add "pending" here
       default: "available",
+    },
+    pendingBooking: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
+      default: null,
+    },
+    bookedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    bookedAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
