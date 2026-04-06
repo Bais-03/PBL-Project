@@ -1,29 +1,31 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { BookingProvider } from "./context/BookingContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Browse from "./pages/Browse";
 import CreateListing from "./pages/CreateListing";
-import BookedItems from "./components/BookedItems";
-import Profile from "./pages/Profile"; // Add Profile import
+import Profile from "./pages/Profile";
+import Bookings from "./pages/Bookings";
+import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AnimatePresence mode="wait">
+      <BookingProvider>
+        <Router>
           <Routes>
-            {/* Public Routes */}
+            {/* Public routes */}
             <Route path="/" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
-            {/* Protected Routes */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            
+            {/* Protected routes (require authentication) */}
             <Route
               path="/browse"
               element={
@@ -32,7 +34,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/create"
               element={
@@ -41,17 +42,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-            <Route
-              path="/booked"
-              element={
-                <ProtectedRoute>
-                  <BookedItems />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Add Profile route */}
             <Route
               path="/profile"
               element={
@@ -60,9 +50,20 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <Bookings />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Fallback route - redirect any unknown paths to dashboard */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-        </AnimatePresence>
-      </BrowserRouter>
+        </Router>
+      </BookingProvider>
     </AuthProvider>
   );
 }
