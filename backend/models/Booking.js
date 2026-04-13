@@ -50,11 +50,23 @@ const bookingSchema = new mongoose.Schema(
       },
       ratedAt: Date,
     },
+    // Track number of times this specific booking has been rebooked (for abuse prevention)
+    rebookingCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
-// Ensure a user can only have one pending booking per listing
-bookingSchema.index({ user: 1, listing: 1, status: "pending" }, { unique: true, sparse: true });
+// ✅ REMOVED unique index to allow rebooking after cancellation
+// Old index that caused issues:
+// bookingSchema.index({ user: 1, listing: 1, status: "pending" }, { unique: true, sparse: true });
+
+// ✅ Added regular indexes for query performance (not unique)
+bookingSchema.index({ user: 1, listing: 1, status: 1 });
+bookingSchema.index({ status: 1, createdAt: -1 });
+bookingSchema.index({ seller: 1, status: 1 });
+bookingSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Booking", bookingSchema);

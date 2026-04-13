@@ -1060,3 +1060,129 @@
   background: #6b7280;
   color: white;
 }
+/* ─── Book message modal ──────────────────────────────────────────── */
+.modal--book {
+  max-width: 440px;
+}
+
+.modal__book-price {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(26,50,99,0.08);
+  margin-bottom: 1.25rem;
+}
+
+.modal__book-cat {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  background: rgba(26,50,99,0.07);
+  color: #1A3263;
+}
+
+.modal__book-msg-wrap {
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.modal__book-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.modal__book-opt {
+  font-weight: 400;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.modal__book-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid rgba(26,50,99,0.12);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #374151;
+  resize: none;
+  line-height: 1.5;
+  transition: border-color 0.18s;
+}
+
+.modal__book-textarea:focus {
+  outline: none;
+  border-color: #1A3263;
+  box-shadow: 0 0 0 3px rgba(26,50,99,0.08);
+}
+
+.modal__book-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.modal__book-charcount {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  text-align: right;
+}
+
+.modal__book-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.modal__book-actions .modal__dismiss {
+  flex: 1;
+}
+
+.modal__book-confirm {
+  flex: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #0f1f3d;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.modal__book-confirm:hover:not(:disabled) {
+  background: #1A3263;
+  transform: translateY(-1px);
+}
+
+.modal__book-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modal__book-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

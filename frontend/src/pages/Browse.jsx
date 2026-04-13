@@ -68,9 +68,9 @@ function PriceDisplay({ priceType, price }) {
   if (priceType === "free") return <span className="lc__price lc__price--free">Free</span>;
   if (priceType === "negotiable" || price === null || price === undefined)
     return <span className="lc__price lc__price--negotiate">Negotiable</span>;
-  if (priceType === "fixed" && price > 0)
+  if (priceType === "fixed")
     return <span className="lc__price">₹{Number(price).toLocaleString("en-IN")}</span>;
-  return <span className="lc__price lc__price--free">Free</span>;
+  return <span className="lc__price lc__price--negotiate">Negotiable</span>;
 }
 
 /* ─── Category icon ──────────────────────────────────────────────── */
@@ -256,8 +256,82 @@ function ContactModal({ item, onClose }) {
   );
 }
 
+
+/* ─── Book with message modal ────────────────────────────────────── */
+function BookMessageModal({ item, onClose, onConfirm, isLoading }) {
+  const [message, setMessage] = useState("");
+
+  if (!item) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal--book" onClick={(e) => e.stopPropagation()}>
+        <div className="modal__header">
+          <div>
+            <p className="modal__label">Book Item</p>
+            <h3 className="modal__title">{item.title}</h3>
+          </div>
+          <button className="modal__close" onClick={onClose} type="button">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="modal__book-price">
+          <PriceDisplay priceType={item.priceType} price={item.price} />
+          {item.category && (
+            <span className="modal__book-cat">{item.category}</span>
+          )}
+        </div>
+
+        <div className="modal__book-msg-wrap">
+          <label className="modal__book-label" htmlFor="book-msg">
+            Message to seller
+            <span className="modal__book-opt">optional</span>
+          </label>
+          <textarea
+            id="book-msg"
+            className="modal__book-textarea"
+            placeholder="e.g. I can pick it up on Tuesday evening near the library"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={3}
+            maxLength={300}
+          />
+          <span className="modal__book-charcount">{message.length}/300</span>
+        </div>
+
+        <div className="modal__book-actions">
+          <button className="modal__dismiss" onClick={onClose} type="button" disabled={isLoading}>
+            Cancel
+          </button>
+          <button
+            className="modal__book-confirm"
+            onClick={() => onConfirm(message)}
+            disabled={isLoading}
+            type="button"
+          >
+            {isLoading ? (
+              <span className="modal__book-spinner" />
+            ) : (
+              <>
+                <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                Send Booking Request
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Listing card ───────────────────────────────────────────────── */
 function ListingCard({ item, onBook, onContact, isBooked, bookingInProgress }) {
+  const navigate = useNavigate();
   const status = item.status || "available";
   const accentColor = CAT_COLORS[item.category] || "#547792";
 
@@ -267,9 +341,18 @@ function ListingCard({ item, onBook, onContact, isBooked, bookingInProgress }) {
     sold:      { label: "Sold",      cls: "status--sold" },
   };
 
-  const handleBookClick = async () => {
-    if (bookingInProgress) return;
-    await onBook(item._id);
+  const handleCardClick = () => {
+    navigate(`/listing/${item._id}`);
+  };
+
+  const handleBookClick = (e) => {
+    e.stopPropagation();
+    onBook(item._id);
+  };
+
+  const handleContactClick = (e) => {
+    e.stopPropagation();
+    onContact(item);
   };
 
   // Only show available items (booked items are filtered out)
@@ -278,7 +361,7 @@ function ListingCard({ item, onBook, onContact, isBooked, bookingInProgress }) {
   }
 
   return (
-    <div className={`lc ${isBooked ? "lc--booked" : ""} ${status === "sold" ? "lc--sold" : ""}`}>
+    <div className={`lc ${isBooked ? "lc--booked" : ""} ${status === "sold" ? "lc--sold" : ""}`} onClick={handleCardClick}>
       <div className="lc__bar" style={{ background: accentColor }} />
 
       <div className="lc__img-wrap">
@@ -320,7 +403,7 @@ function ListingCard({ item, onBook, onContact, isBooked, bookingInProgress }) {
           >
             {bookingInProgress ? "Booking..." : "Book Now"}
           </button>
-          <button className="lc__btn lc__btn--contact" onClick={() => onContact(item)}>
+          <button className="lc__btn lc__btn--contact" onClick={handleContactClick}>
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
               <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
             </svg>
@@ -345,6 +428,7 @@ export default function Browse() {
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingInProgress, setBookingInProgress] = useState(null);
+  const [bookModalItem, setBookModalItem] = useState(null);
   const toastRef = useRef(null);
   const sidebarRef = useRef(null);
 
@@ -388,18 +472,22 @@ export default function Browse() {
     toastRef.current = setTimeout(() => setToast(null), 4000);
   };
 
-  const handleBook = async (id) => {
+  const handleBook = (id) => {
+    // Find the item and open the booking modal
+    const item = listings.find(l => l._id === id) || null;
+    setBookModalItem(item || { _id: id });
+  };
+
+  const handleConfirmBook = async (message) => {
+    if (!bookModalItem) return;
+    const id = bookModalItem._id;
     setBookingInProgress(id);
-    
-    // Optional: Show a modal to get message from user
-    const message = prompt("Optional: Add a message to the seller (e.g., when you'd like to pick up the item):");
-    
-    const result = await createBookingRequest(id, message);
+    const result = await createBookingRequest(id, message || "");
     setBookingInProgress(null);
-    
+    setBookModalItem(null);
     if (result.success) {
       showToast("Booking request sent! The seller will review your request.", "success");
-      await fetchListings(); // Refresh listings to remove the booked item
+      await fetchListings();
     } else {
       showToast(result.error || "Failed to send booking request", "error");
     }
@@ -445,6 +533,14 @@ export default function Browse() {
   return (
     <div className="browse">
       {contactItem && <ContactModal item={contactItem} onClose={() => setContactItem(null)} />}
+      {bookModalItem && (
+        <BookMessageModal
+          item={bookModalItem}
+          onClose={() => setBookModalItem(null)}
+          onConfirm={handleConfirmBook}
+          isLoading={bookingInProgress === bookModalItem._id}
+        />
+      )}
 
       {toast && (
         <div className={`toast toast--${toast.type}`}>

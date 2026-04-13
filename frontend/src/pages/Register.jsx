@@ -10,11 +10,14 @@ export default function Register() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     collegeId: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -22,28 +25,48 @@ export default function Register() {
   const validateForm = () => {
     const newErrors = {};
 
+    // Name validation
     if (!form.name.trim()) {
       newErrors.name = "Full name is required";
     } else if (form.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
     }
 
+    // Email validation
     if (!form.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (!form.email.includes("@") || !form.email.includes(".")) {
+      newErrors.email = "Please enter a valid email address";
     }
 
+    // Phone validation
+    if (!form.phone) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^[0-9]{10}$/.test(form.phone)) {
+      newErrors.phone = "Please enter a valid 10-digit mobile number";
+    }
+
+    // College ID validation
     if (!form.collegeId.trim()) {
       newErrors.collegeId = "College ID is required";
     } else if (form.collegeId.trim().length < 3) {
       newErrors.collegeId = "College ID must be at least 3 characters";
     }
 
+    // Password validation
     if (!form.password) {
       newErrors.password = "Password is required";
     } else if (form.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    }
+
+    // Confirm password validation
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     return newErrors;
@@ -55,7 +78,16 @@ export default function Register() {
   };
 
   const handleChange = (field, value) => {
-    setForm({ ...form, [field]: value });
+    // For phone, only allow numbers and limit to 10 digits
+    if (field === "phone") {
+      const cleaned = value.replace(/\D/g, "");
+      if (cleaned.length <= 10) {
+        setForm({ ...form, [field]: cleaned });
+      }
+    } else {
+      setForm({ ...form, [field]: value });
+    }
+    
     if (touched[field]) {
       setErrors(validateForm());
     }
@@ -67,7 +99,14 @@ export default function Register() {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      setTouched({ name: true, email: true, collegeId: true, password: true });
+      setTouched({ 
+        name: true, 
+        email: true, 
+        phone: true,
+        collegeId: true, 
+        password: true,
+        confirmPassword: true 
+      });
       return;
     }
 
@@ -75,8 +114,17 @@ export default function Register() {
     setErrors({});
 
     try {
-      await axios.post("/auth/register", form);
-      navigate("/login");
+      // Only send required fields to backend
+      const registrationData = {
+        name: form.name.trim(),
+        email: form.email.toLowerCase().trim(),
+        phone: form.phone,
+        collegeId: form.collegeId.trim(),
+        password: form.password,
+      };
+      
+      await axios.post("/auth/register", registrationData);
+      navigate("/login", { state: { message: "Registration successful! Please login." } });
     } catch (err) {
       setErrors({
         general: err.response?.data?.message || "Registration failed. Please try again.",
@@ -220,9 +268,41 @@ export default function Register() {
             )}
           </motion.div>
 
+          {/* Phone Number */}
+          <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible">
+            <label htmlFor="phone">Mobile Number</label>
+            <div className="input-wrapper">
+              <input
+                id="phone"
+                type="tel"
+                placeholder="9876543210"
+                value={form.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                onBlur={() => handleBlur("phone")}
+                className={
+                  touched.phone && errors.phone
+                    ? "error"
+                    : isSuccess("phone")
+                    ? "success"
+                    : ""
+                }
+                disabled={isLoading}
+                autoComplete="tel"
+                maxLength={10}
+              />
+              {isSuccess("phone") && <span className="input-success-icon">✓</span>}
+            </div>
+            {touched.phone && errors.phone && (
+              <motion.span className="field-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}>
+                {errors.phone}
+              </motion.span>
+            )}
+            <span className="input-hint">Enter a 10-digit mobile number</span>
+          </motion.div>
+
           {/* College ID */}
           <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible">
-            <label htmlFor="collegeId">College ID</label>
+            <label htmlFor="collegeId">College ID / Roll Number</label>
             <div className="input-wrapper">
               <input
                 id="collegeId"
@@ -307,6 +387,44 @@ export default function Register() {
             )}
           </motion.div>
 
+          {/* Confirm Password */}
+          <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="password-input-wrapper">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm your password"
+                value={form.confirmPassword}
+                onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                onBlur={() => handleBlur("confirmPassword")}
+                className={
+                  touched.confirmPassword && errors.confirmPassword
+                    ? "error"
+                    : isSuccess("confirmPassword")
+                    ? "success"
+                    : ""
+                }
+                disabled={isLoading}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {touched.confirmPassword && errors.confirmPassword && (
+              <motion.span className="field-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}>
+                {errors.confirmPassword}
+              </motion.span>
+            )}
+          </motion.div>
+
           {/* Info note */}
           <motion.div
             className="info-note"
@@ -317,7 +435,7 @@ export default function Register() {
             <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
             </svg>
-            <span>Use your college email and ID for verification. This helps keep our community safe and authentic.</span>
+            <span>Use your college email and ID for verification. Your phone number will be shared with sellers when you book items.</span>
           </motion.div>
 
           {/* Submit */}

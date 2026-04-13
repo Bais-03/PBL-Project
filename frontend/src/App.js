@@ -11,6 +11,7 @@ import Bookings from "./pages/Bookings";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ListingDetail from "./pages/ListingDetail";
 
 function App() {
   return (
@@ -61,6 +62,15 @@ function App() {
             
             {/* Fallback route - redirect any unknown paths to dashboard */}
             <Route path="*" element={<Navigate to="/" />} />
+
+            <Route
+                path="/listing/:id"
+                element={
+                  <ProtectedRoute>
+                    <ListingDetail />
+                  </ProtectedRoute>
+                }
+              />
           </Routes>
         </Router>
       </BookingProvider>

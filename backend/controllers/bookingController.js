@@ -4,6 +4,10 @@ const Message = require("../models/Message");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 
+// Configuration for rebooking limits
+const MAX_REBOOKINGS_PER_ITEM = 3; // Maximum number of times a user can rebook the same item after cancellation
+const REBOOKING_COOLDOWN_MINUTES = 5; // Minutes to wait before rebooking after cancellation
+
 // Create a booking request
 exports.createBookingRequest = async (req, res) => {
   try {
@@ -26,15 +30,47 @@ exports.createBookingRequest = async (req, res) => {
       return res.status(400).json({ message: "You cannot book your own listing" });
     }
 
-    // Check if user already has a pending/active booking for this listing
-    const existingBooking = await Booking.findOne({
+    // ✅ Check if user already has a PENDING or ACCEPTED booking for this listing
+    const existingActiveBooking = await Booking.findOne({
       listing: listingId,
       user: userId,
       status: { $in: ["pending", "accepted"] }
     });
 
-    if (existingBooking) {
-      return res.status(400).json({ message: "You already have a booking request for this item" });
+    if (existingActiveBooking) {
+      return res.status(400).json({ 
+        message: "You already have an active booking request for this item. Please wait for seller's response." 
+      });
+    }
+
+    // ✅ Check for recent cancellation (anti-spam measure)
+    const recentCancellation = await Booking.findOne({
+      listing: listingId,
+      user: userId,
+      status: "cancelled",
+      updatedAt: { $gt: new Date(Date.now() - REBOOKING_COOLDOWN_MINUTES * 60 * 1000) }
+    });
+
+    if (recentCancellation) {
+      const remainingMinutes = Math.ceil(
+        (REBOOKING_COOLDOWN_MINUTES * 60 * 1000 - (Date.now() - recentCancellation.updatedAt)) / 60000
+      );
+      return res.status(400).json({ 
+        message: `You recently cancelled a booking for this item. Please wait ${remainingMinutes} minute(s) before trying again.` 
+      });
+    }
+
+    // ✅ Check rebooking limit (prevent abuse)
+    const cancelledCount = await Booking.countDocuments({
+      listing: listingId,
+      user: userId,
+      status: "cancelled"
+    });
+
+    if (cancelledCount >= MAX_REBOOKINGS_PER_ITEM) {
+      return res.status(400).json({ 
+        message: `You have cancelled this booking ${MAX_REBOOKINGS_PER_ITEM} times. For fair usage, you cannot book this item again.` 
+      });
     }
 
     // Create booking request
@@ -43,7 +79,8 @@ exports.createBookingRequest = async (req, res) => {
       listing: listingId,
       seller: listing.createdBy,
       message: message || "",
-      status: "pending"
+      status: "pending",
+      rebookingCount: cancelledCount + 1
     });
 
     await booking.save();
@@ -72,8 +109,11 @@ exports.createBookingRequest = async (req, res) => {
 
   } catch (err) {
     console.error("Booking request error:", err);
+    // Handle any remaining duplicate key errors gracefully
     if (err.code === 11000) {
-      return res.status(400).json({ message: "You already have a pending request for this item" });
+      return res.status(400).json({ 
+        message: "Unable to create booking. Please check your existing bookings." 
+      });
     }
     res.status(500).json({ message: "Failed to create booking request" });
   }
@@ -86,7 +126,7 @@ exports.acceptBooking = async (req, res) => {
     const sellerId = req.user.id;
 
     const booking = await Booking.findById(bookingId)
-      .populate("user", "name email")
+      .populate("user", "name email phone phoneNumber mobile")
       .populate("listing");
 
     if (!booking) {
@@ -113,6 +153,8 @@ exports.acceptBooking = async (req, res) => {
     const listing = await Listing.findById(booking.listing._id);
     listing.status = "booked";
     listing.pendingBooking = null;
+    listing.bookedBy = booking.user._id;
+    listing.bookedAt = new Date();
     await listing.save();
 
     // Create notification for buyer
@@ -120,7 +162,7 @@ exports.acceptBooking = async (req, res) => {
       user: booking.user._id,
       type: "booking_accepted",
       title: "Booking Request Accepted",
-      message: `Your booking request for "${listing.title}" has been accepted. You can now chat with the seller.`,
+      message: `Your booking request for "${listing.title}" has been accepted. You can now contact the seller.`,
       relatedId: booking._id,
       relatedModel: "Booking"
     });
@@ -144,7 +186,7 @@ exports.rejectBooking = async (req, res) => {
     const sellerId = req.user.id;
 
     const booking = await Booking.findById(bookingId)
-      .populate("user", "name email")
+      .populate("user", "name email phone phoneNumber mobile")
       .populate("listing");
 
     if (!booking) {
@@ -195,7 +237,7 @@ exports.rejectBooking = async (req, res) => {
   }
 };
 
-// Cancel booking (by buyer)
+// Cancel booking (by buyer) - only allowed when status is "pending"
 exports.cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -212,22 +254,20 @@ exports.cancelBooking = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Check if booking can be cancelled (only pending or accepted)
-    if (!["pending", "accepted"].includes(booking.status)) {
-      return res.status(400).json({ message: "Booking cannot be cancelled at this stage" });
+    // Only allow cancellation when booking is still pending
+    if (booking.status !== "pending") {
+      return res.status(400).json({ 
+        message: "Booking can only be cancelled before the seller accepts it" 
+      });
     }
 
-    // Update booking
+    // Update booking status to cancelled
     booking.status = "cancelled";
     await booking.save();
 
-    // Update listing status
+    // Restore listing to available
     const listing = await Listing.findById(booking.listing._id);
-    if (booking.status === "pending") {
-      listing.status = "available";
-    } else if (booking.status === "accepted") {
-      listing.status = "available";
-    }
+    listing.status = "available";
     listing.pendingBooking = null;
     await listing.save();
 
@@ -243,7 +283,7 @@ exports.cancelBooking = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Booking cancelled successfully"
+      message: "Booking cancelled successfully. You can now book this item again."
     });
 
   } catch (err) {
@@ -259,7 +299,7 @@ exports.completeBooking = async (req, res) => {
     const sellerId = req.user.id;
 
     const booking = await Booking.findById(bookingId)
-      .populate("user", "name email")
+      .populate("user", "name email phone phoneNumber mobile")
       .populate("listing");
 
     if (!booking) {
@@ -376,7 +416,7 @@ exports.rateBooking = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { status } = req.query; // pending, accepted, completed, etc.
+    const { status } = req.query;
 
     const query = {
       $or: [{ user: userId }, { seller: userId }]
@@ -387,11 +427,11 @@ exports.getUserBookings = async (req, res) => {
     }
 
     const bookings = await Booking.find(query)
-      .populate("user", "name email averageRating")
-      .populate("seller", "name email averageRating")
+      .populate("user", "name email phone phoneNumber mobile averageRating")
+      .populate("seller", "name email phone phoneNumber mobile averageRating")
       .populate({
         path: "listing",
-        populate: { path: "createdBy", select: "name email" }
+        populate: { path: "createdBy", select: "name email phone phoneNumber mobile" }
       })
       .sort("-createdAt");
 
@@ -410,8 +450,8 @@ exports.getBookingDetails = async (req, res) => {
     const userId = req.user.id;
 
     const booking = await Booking.findById(bookingId)
-      .populate("user", "name email averageRating")
-      .populate("seller", "name email averageRating")
+      .populate("user", "name email phone phoneNumber mobile averageRating")
+      .populate("seller", "name email phone phoneNumber mobile averageRating")
       .populate("listing");
 
     if (!booking) {
