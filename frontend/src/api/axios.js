@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://pbl-project-w4f9.onrender.com/api",
   timeout: 30000, // Increased from 10000 to 30000 milliseconds (30 seconds)
   headers: {
     "Content-Type": "application/json",
