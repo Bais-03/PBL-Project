@@ -51,6 +51,10 @@ const listingSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    images: {  // Add this new field for multiple images
+      type: [String],
+      default: [],
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -58,7 +62,7 @@ const listingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["available", "pending", "booked", "sold"], // Add "pending" here
+      enum: ["available", "pending", "booked", "sold"],
       default: "available",
     },
     pendingBooking: {

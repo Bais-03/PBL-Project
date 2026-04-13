@@ -646,3 +646,41 @@
     padding: 0.75rem 1rem;
   }
 }
+
+/* Input hint text */
+.input-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Phone input styling */
+input[type="tel"] {
+  letter-spacing: 0.5px;
+}
+
+/* Success state improvements */
+.input-wrapper input.success,
+.password-input-wrapper input.success {
+  border-color: var(--success);
+  padding-right: 2.5rem;
+}
+
+.input-success-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--success);
+  font-weight: bold;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .input-hint {
+    font-size: 0.65rem;
+  }
+}

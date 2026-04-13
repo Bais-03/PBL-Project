@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const Listing = require("../models/Listing");
+const Booking = require("../models/Booking");  // ← ADD THIS LINE
 const auth = require("../middleware/authMiddleware");
 
 // Get user profile

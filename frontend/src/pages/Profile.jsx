@@ -203,20 +203,49 @@ export default function Profile() {
           [socialField]: value
         }
       }));
+      // Clear error using the actual error key (e.g. "instagram", not "social.instagram")
+      if (formErrors[socialField]) {
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[socialField];
+          return newErrors;
+        });
+      }
     } else {
       setFormData(prev => ({
         ...prev,
         [name]: value
       }));
+      if (formErrors[name]) {
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
     }
+  };
 
-    if (formErrors[name]) {
-      setFormErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
+
+  const handleCancelEdit = () => {
+    // Reset form back to current saved user data and clear all errors
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        phone: user.phone || "",
+        college: user.college || "",
+        semester: user.semester || "",
+        department: user.department || "",
+        graduationYear: user.graduationYear || "",
+        bio: user.bio || "",
+        socialLinks: {
+          instagram: user.socialLinks?.instagram || "",
+          linkedin: user.socialLinks?.linkedin || ""
+        }
       });
     }
+    setFormErrors({});
+    setEditing(false);
   };
 
   const handleUpdateProfile = async (e) => {
@@ -281,7 +310,19 @@ export default function Profile() {
         };
         
         setUser(updatedUser);
-        setFormData(prev => ({ ...prev, ...updateData }));
+        setFormData({
+          name: updatedUser.name || "",
+          phone: updatedUser.phone || "",
+          college: updatedUser.college || "",
+          semester: updatedUser.semester || "",
+          department: updatedUser.department || "",
+          graduationYear: updatedUser.graduationYear || "",
+          bio: updatedUser.bio || "",
+          socialLinks: {
+            instagram: updatedUser.socialLinks?.instagram || "",
+            linkedin: updatedUser.socialLinks?.linkedin || ""
+          }
+        });
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
         showToast("Profile updated successfully!", "success");
@@ -726,11 +767,11 @@ export default function Profile() {
       </div>
 
       {editing && (
-        <div className="profile__modal-overlay" onClick={() => setEditing(false)}>
+        <div className="profile__modal-overlay" onClick={handleCancelEdit}>
           <div className="profile__modal" onClick={(e) => e.stopPropagation()}>
             <div className="profile__modal-header">
               <h3>Edit Profile</h3>
-              <button className="profile__modal-close" onClick={() => setEditing(false)}>
+              <button className="profile__modal-close" onClick={handleCancelEdit}>
                 <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
                 </svg>
@@ -901,7 +942,7 @@ export default function Profile() {
               </div>
 
               <div className="profile__form-actions">
-                <button type="button" className="profile__form-cancel" onClick={() => setEditing(false)} disabled={saving}>
+                <button type="button" className="profile__form-cancel" onClick={handleCancelEdit} disabled={saving}>
                   Cancel
                 </button>
                 <button type="submit" className={`profile__form-save ${saving ? 'saving' : ''}`} disabled={saving}>

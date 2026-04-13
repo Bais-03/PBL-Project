@@ -18,6 +18,7 @@ exports.createListing = async (req, res) => {
       preferMode,
       availability,
       image,
+      images,  // Add this line to receive images array
     } = req.body;
 
     // Validate required fields
@@ -42,6 +43,7 @@ exports.createListing = async (req, res) => {
       preferMode: preferMode || "",
       availability: availability || "",
       image: image || "",
+      images: images || [],  // Add this line to save images array
       createdBy: req.user.id,
     });
 
@@ -61,7 +63,7 @@ exports.getAllListings = async (req, res) => {
   try {
     const listings = await Listing.find()
       .populate("createdBy", "name email")
-      .sort({ createdAt: -1 }); // Newest first
+      .sort({ createdAt: -1 });
     res.json(listings);
   } catch (error) {
     console.error("Fetch listings error:", error);
