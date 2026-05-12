@@ -37,14 +37,12 @@ export default function Register() {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
-    } else if (!form.email.includes("@") || !form.email.includes(".")) {
-      newErrors.email = "Please enter a valid email address";
     }
 
-    // Phone validation
+    // Phone validation - more flexible
     if (!form.phone) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^[0-9]{10}$/.test(form.phone)) {
+    } else if (!/^\d{10}$/.test(form.phone.toString())) {
       newErrors.phone = "Please enter a valid 10-digit mobile number";
     }
 
@@ -118,14 +116,22 @@ export default function Register() {
       const registrationData = {
         name: form.name.trim(),
         email: form.email.toLowerCase().trim(),
-        phone: form.phone,
+        phone: form.phone, // Send as string
         collegeId: form.collegeId.trim(),
         password: form.password,
       };
       
-      await axios.post("/auth/register", registrationData);
+      console.log("📤 Sending registration data:", registrationData);
+      
+      const response = await axios.post("/auth/register", registrationData);
+      console.log("✅ Registration response:", response.data);
+      
       navigate("/login", { state: { message: "Registration successful! Please login." } });
     } catch (err) {
+      console.error("❌ Registration error full:", err);
+      console.error("❌ Response data:", err.response?.data);
+      console.error("❌ Response status:", err.response?.status);
+      
       setErrors({
         general: err.response?.data?.message || "Registration failed. Please try again.",
       });

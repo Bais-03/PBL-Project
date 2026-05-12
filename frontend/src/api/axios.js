@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:5000/api",
-  timeout: 30000, // Increased from 10000 to 30000 milliseconds (30 seconds)
+  baseURL: "http://localhost:5000/api", // Change to your local backend URL
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -16,17 +16,24 @@ instance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(`📡 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   },
   (error) => {
+    console.error("Request error:", error);
     return Promise.reject(error);
   }
 );
 
 // Add a response interceptor to handle errors globally
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ Response from ${response.config.url}:`, response.status);
+    return response;
+  },
   (error) => {
+    console.error("❌ Response error:", error.response?.status, error.response?.data);
+    
     // Handle 401 Unauthorized errors globally
     if (error.response?.status === 401) {
       localStorage.removeItem("token");

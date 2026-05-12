@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const Listing = require("../models/Listing");
-const Booking = require("../models/Booking");  // ← ADD THIS LINE
+const Booking = require("../models/Booking");
 const auth = require("../middleware/authMiddleware");
 
 // Get user profile
@@ -57,21 +57,22 @@ router.get("/listings", auth, async (req, res) => {
   }
 });
 
-// Get user's saved/booked items
+// Get user's booked items - ✅ FIXED
 router.get("/bookings", auth, async (req, res) => {
   try {
+    // Fixed: Use valid status values from Booking schema
     const bookings = await Booking.find({ 
       user: req.user.id,
-      status: "active"
+      status: { $in: ["accepted", "completed", "pending"] }  // ✅ Fixed - valid statuses
     })
     .populate("listing")
     .sort("-createdAt");
     
-    const savedItems = bookings.map(booking => booking.listing);
-    res.json(savedItems);
+    const bookedItems = bookings.map(booking => booking.listing).filter(item => item !== null);
+    res.json(bookedItems);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching user bookings:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
