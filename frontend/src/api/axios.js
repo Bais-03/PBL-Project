@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:5000/api", // Change to your local backend URL
+  baseURL: "https://pbl-project-w4f9.onrender.com/api", // Change to your local backend URL
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
