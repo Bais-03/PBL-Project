@@ -3,21 +3,33 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
+  console.log("🔵 Register endpoint hit");
+  console.log("📦 Request body:", req.body);
+  
   try {
     const { name, email, password, collegeId, phone } = req.body;
 
+    // Validate required fields
     if (!name || !email || !password || !collegeId) {
+      console.log("❌ Missing required fields");
       return res.status(400).json({ message: "All fields required" });
     }
 
+    // Check if user exists
+    console.log("🔍 Checking for existing user...");
     const existing = await User.findOne({ email });
     if (existing) {
+      console.log("⚠️ User already exists:", email);
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Hash password in controller
+    console.log("🔐 Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    // Create user with hashed password
+    console.log("👤 Creating user...");
+    const user = await User.create({
       name,
       email,
       password: hashedPassword,
@@ -26,11 +38,30 @@ exports.register = async (req, res) => {
       phoneNumber: phone || "",
       mobile: phone || "",
     });
+    
+    console.log("✅ User created successfully:", user._id);
 
     res.status(201).json({ message: "Registered successfully" });
   } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ message: "Registration failed" });
+    console.error("🔥 REGISTRATION ERROR DETAILS:");
+    console.error("Error name:", err.name);
+    console.error("Error code:", err.code);
+    console.error("Error message:", err.message);
+    
+    // Handle specific MongoDB errors
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+    
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ message: messages.join(", ") });
+    }
+    
+    res.status(500).json({ 
+      message: "Registration failed",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 

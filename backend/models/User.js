@@ -84,21 +84,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ FIXED: Simple async/await pre-save middleware
-userSchema.pre("save", async function(next) {
-  // Only hash the password if it has been modified (or is new)
-  if (!this.isModified("password")) {
-    return next();
-  }
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+// ❌ REMOVED the problematic pre-save middleware
+// We'll hash passwords in the controller instead
 
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
